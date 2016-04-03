@@ -13,35 +13,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ShareActionProvider;
+import android.widget.TextView;
 
-public class MainActivity extends ActionBarActivity {
+public class DetailActivity extends ActionBarActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_detail);
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .add(R.id.container, new ForecastFragment())
+                    .add(R.id.container, new DetailActivityFragment())
                     .commit();
         }
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.detail, menu);
         return true;
     }
 
@@ -57,23 +56,6 @@ public class MainActivity extends ActionBarActivity {
             Intent intent = new Intent(this, SettingsActivity.class);
             startActivity(intent);
             return true;
-        }
-        else if (id == R.id.action_view_location) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            String location = prefs.getString(
-                    getString(R.string.pref_location_key),
-                    getString(R.string.pref_location_default));
-
-            String uri = "geo:0,0?q=" + location;
-            Intent mapIntent = new Intent(android.content.Intent.ACTION_VIEW);
-            mapIntent.setData(Uri.parse(uri));
-            if (mapIntent.resolveActivity(getPackageManager()) != null) {
-                startActivity(mapIntent);
-                return true;
-            }
-            else {
-                return false;
-            }
         }
 
         return super.onOptionsItemSelected(item);
