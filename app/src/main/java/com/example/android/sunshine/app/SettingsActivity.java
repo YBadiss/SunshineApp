@@ -4,7 +4,6 @@ import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings.
@@ -23,10 +22,18 @@ public class SettingsActivity extends PreferenceActivity
         // Add 'general' preferences, defined in the XML file
         addPreferencesFromResource(R.xml.pref_general);
 
+        Preferences prefs = new Preferences(this);
+
         // For all preferences, attach an OnPreferenceChangeListener so the UI summary can be
         // updated when the preference changes.
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_location_key)));
-        bindPreferenceSummaryToValue(findPreference(getString(R.string.pref_unit_key)));
+        String locationKey = getString(R.string.pref_location_key);
+        bindPreferenceSummaryToValue(
+                findPreference(locationKey),
+                prefs.getPreference(locationKey));
+        String unitKey = getString(R.string.pref_unit_key);
+        bindPreferenceSummaryToValue(
+                findPreference(unitKey),
+                prefs.getPreference(unitKey));
     }
 
     /**
@@ -34,16 +41,12 @@ public class SettingsActivity extends PreferenceActivity
      * Also fires the listener once, to initialize the summary (so it shows up before the value
      * is changed.)
      */
-    private void bindPreferenceSummaryToValue(Preference preference) {
+    private void bindPreferenceSummaryToValue(Preference preference, String value) {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(this);
-
         // Trigger the listener immediately with the preference's
         // current value.
-        onPreferenceChange(preference,
-                PreferenceManager
-                        .getDefaultSharedPreferences(preference.getContext())
-                        .getString(preference.getKey(), ""));
+        onPreferenceChange(preference, value);
     }
 
     @Override

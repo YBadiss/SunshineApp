@@ -36,7 +36,6 @@ public class DetailActivityFragment extends Fragment {
         mShareActionProvider.setShareIntent(createShareIntent());
     }
 
-
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         return super.onOptionsItemSelected(item);

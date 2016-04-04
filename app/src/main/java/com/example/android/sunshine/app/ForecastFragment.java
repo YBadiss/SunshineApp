@@ -1,20 +1,13 @@
 package com.example.android.sunshine.app;
 
-import android.app.Activity;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -38,31 +31,16 @@ import java.util.ArrayList;
  * Created by yacinebadiss on 28/03/2016.
  */
 public class ForecastFragment extends Fragment {
-
-    ArrayAdapter<String> mForecastAdapter;
+    private ArrayAdapter<String> mForecastAdapter;
+    private Preferences mPrefs;
 
     public ForecastFragment() {
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        setHasOptionsMenu(true);
+        mPrefs = new Preferences(getActivity());
         super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.forecast_fragment, menu);
-        super.onCreateOptionsMenu(menu, inflater);
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_refresh) {
-            refreshForecast();
-            return true;
-        }
-        return super.onOptionsItemSelected(item);
     }
 
     @Override
@@ -92,7 +70,6 @@ public class ForecastFragment extends Fragment {
                 startActivity(intent);
             }
         });
-
         return rootView;
     }
 
@@ -103,20 +80,12 @@ public class ForecastFragment extends Fragment {
     }
 
     private void refreshForecast() {
-        SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(getActivity());
-        String location = prefs.getString(
-                getString(R.string.pref_location_key),
-                getString(R.string.pref_location_default));
-        String unit = prefs.getString(
-                getString(R.string.pref_unit_key),
-                getString(R.string.pref_unit_default));
-
         new ForecastAsyncRetriever().execute(
                 new ForecastParameters(
-                        location,
+                        mPrefs.getLocation(),
                         10,
                         ForecastParameters.FORMAT_JSON,
-                        unit));
+                        mPrefs.getUnit()));
     }
 
     private class ForecastParameters {
@@ -169,14 +138,6 @@ public class ForecastFragment extends Fragment {
                 return null;
             }
 
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String forecastJsonStr;
-
             ForecastParameters forecastParameters = forecastParametersList[0];
 
             if (TEST_MODE) {
@@ -186,6 +147,14 @@ public class ForecastFragment extends Fragment {
                 testResult[2] = forecastParameters.getCityName() + " 3";
                 return testResult;
             }
+
+            // These two need to be declared outside the try/catch
+            // so that they can be closed in the finally block.
+            HttpURLConnection urlConnection = null;
+            BufferedReader reader = null;
+
+            // Will contain the raw JSON response as a string.
+            String forecastJsonStr;
 
             try {
                 // Construct the URL for the OpenWeatherMap query
@@ -199,7 +168,7 @@ public class ForecastFragment extends Fragment {
                         .appendQueryParameter("cnt", forecastParameters.getNbDays().toString())
                         .appendQueryParameter("APPID", APP_ID)
                         .build();
-                Log.w(LOG_TAG, uri.toString());
+                Log.d(LOG_TAG, uri.toString());
                 URL url = new URL(uri.toString());
 
                 // Create the request to OpenWeatherMap, and open the connection

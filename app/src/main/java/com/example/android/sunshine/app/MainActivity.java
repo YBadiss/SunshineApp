@@ -16,16 +16,14 @@
 package com.example.android.sunshine.app;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v7.app.ActionBarActivity;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.widget.ShareActionProvider;
 
 public class MainActivity extends ActionBarActivity {
+    Preferences mPrefs;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,6 +34,7 @@ public class MainActivity extends ActionBarActivity {
                     .add(R.id.container, new ForecastFragment())
                     .commit();
         }
+        mPrefs = new Preferences(this);
     }
 
     @Override
@@ -59,23 +58,31 @@ public class MainActivity extends ActionBarActivity {
             return true;
         }
         else if (id == R.id.action_view_location) {
-            SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
-            String location = prefs.getString(
-                    getString(R.string.pref_location_key),
-                    getString(R.string.pref_location_default));
-
-            String uri = "geo:0,0?q=" + location;
-            Intent mapIntent = new Intent(android.content.Intent.ACTION_VIEW);
-            mapIntent.setData(Uri.parse(uri));
-            if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            Intent mapIntent = createMapIntent(mPrefs.getLocation());
+            if (mapIntent != null) {
                 startActivity(mapIntent);
                 return true;
             }
             else {
                 return false;
             }
+
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    private Intent createMapIntent(String location) {
+        Uri uri = Uri.parse("geo:0,0").buildUpon()
+                .appendQueryParameter("q", location)
+                .build();
+        Intent mapIntent = new Intent(android.content.Intent.ACTION_VIEW);
+        mapIntent.setData(uri);
+        if (mapIntent.resolveActivity(getPackageManager()) != null) {
+            return mapIntent;
+        }
+        else {
+            return null;
+        }
     }
 }
